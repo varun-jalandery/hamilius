@@ -1,0 +1,99 @@
+swagger: '2.0'
+info:
+  title: api-gateway-hamilius
+  version: "0.1"
+schemes:
+  - https
+x-google-management:
+  metrics:
+    - name: "get-processed-files-request"
+      displayName: "List process customer files quota"
+      valueType: INT64
+      metricKind: DELTA
+  quota:
+    limits:
+      - name: "processed-files-limit"
+        metric: "get-processed-files-request"
+        unit: "1/min/{project}"
+        values:
+          STANDARD: 2
+produces:
+  - application/json
+x-google-backend:
+  address: https://hamilius--flask-api-service-471862347286.europe-west1.run.app
+definitions:
+  Document:
+    type: object
+    properties:
+      created_at:
+        type: string
+        format: date-time
+        example: "Sun, 06 Apr 2025 14:17:31 GMT"
+      error_message:
+        type: string
+        example: "Content type not supported"
+        x-nullable: true
+      id:
+        type: string
+        example: "RHiFY55Xk57rcjrJdveM"
+      object_name:
+        type: string
+        example: "tmux-3.3a/Makefile.in"
+      status:
+        type: string
+        enum:
+          - "error"
+          - "success" # Assuming other possible statuses
+        example: "error"
+  Response:
+    type: object
+    properties:
+      docs:
+        type: array
+        items:
+          $ref: '#/definitions/Document'
+      limit:
+        type: integer
+        example: 10
+      num_docs:
+        type: integer
+        example: 10
+  ApiResponse:
+    type: object
+    properties:
+      content_type:
+        type: string
+      limit:
+        type: integer
+        example: 10
+      response:
+        $ref: '#/definitions/Response'
+      status:
+        type: string
+      success:
+        type: integer
+        enum:
+          - 0
+          - 1
+        example: 1
+      time_request:
+        type: integer
+        example: 1743960622
+      version:
+        type: string
+        example: "0.1"
+paths:
+  /processed_files: # Replace with your actual API endpoint
+    get:
+      summary: Get Processed Files
+      operationId: getProcessedFiles
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/ApiResponse'
+      x-google-quota:
+        metricCosts:
+          "get-processed-files-request": 1
