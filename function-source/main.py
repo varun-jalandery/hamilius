@@ -9,7 +9,6 @@ PROJECT_ID = os.environ['FIRESTORE_PROJECT_ID']
 DATABASE_NAME = os.environ['FIRESTORE_DATABASE_NAME']
 COLLECTION_NAME = os.environ['FIRESTORE_COLLECTION_NAME']
 
-# A comment to test hash
 @functions_framework.cloud_event
 def process_customer_file(cloud_event: CloudEvent) -> tuple:
     data = cloud_event.data
@@ -32,10 +31,11 @@ def process_customer_file(cloud_event: CloudEvent) -> tuple:
     print(f"Content type: {content_type}")
 
     if content_type == "text/plain":
-        process_text_file(bucket_name=bucket, object_name=name, content_type=content_type)
+        process_text_file(event_id=event_id, bucket_name=bucket, object_name=name, content_type=content_type)
 
     else:
         write_doc(
+            document_id=event_id,
             object_name=name,
             content_type=content_type,
             status="error",
@@ -50,14 +50,14 @@ def stream_gcs_object(bucket_name, object_name):
 
     return blob.open("rb")
 
-def write_doc(object_name, content_type, status, num_lines=None, error_message=None):
+def write_doc(document_id, object_name, content_type, status, num_lines=None, error_message=None):
     db = firestore.Client(
         database=DATABASE_NAME,
         project=PROJECT_ID
     )
     collection = db.collection(COLLECTION_NAME)
 
-    data = {
+    document_data = {
         "object_name": object_name,
         "content_type": content_type,
         "status": status,
@@ -65,15 +65,15 @@ def write_doc(object_name, content_type, status, num_lines=None, error_message=N
     }
 
     if num_lines is not None:
-        data["num_lines"] = num_lines
+        document_data["num_lines"] = num_lines
 
     if error_message is not None:
-        data["error_message"] = error_message
-    collection.add(data)
+        document_data["error_message"] = error_message
+    collection.add(document_data=document_data, document_id=document_id)
 
-def process_text_file(bucket_name, object_name, content_type):
+def process_text_file(event_id, bucket_name, object_name, content_type):
     try:
-        with stream_gcs_object(bucket_name, object_name) as file_stream:
+        with stream_gcs_object(bucket_name=bucket_name, object_name=object_name) as file_stream:
             line_count = 0
             for line in file_stream:
                 decoded_line = line.decode("utf-8")
@@ -82,6 +82,7 @@ def process_text_file(bucket_name, object_name, content_type):
 
             print(f"Processed {line_count} lines from the object.")
             write_doc(
+                document_id=event_id,
                 object_name=object_name,
                 content_type=content_type,
                 num_lines=line_count,

@@ -1,7 +1,7 @@
 data "google_project" "project" {}
 
 provider "google" {
-  credentials = file("../hamilius-511324b08e84.json")
+  credentials = file("./hamilius-511324b08e84.json")
   project = var.project_id
   region  = var.region_name
 }
