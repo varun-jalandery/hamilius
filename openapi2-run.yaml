@@ -21,6 +21,7 @@ produces:
   - application/json
 x-google-backend:
   address: https://hamilius--flask-api-service-471862347286.europe-west1.run.app
+  jwt_audience: ${RUN_SERVICE_URL}
 definitions:
   Document:
     type: object
