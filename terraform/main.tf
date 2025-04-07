@@ -152,6 +152,7 @@ resource "google_cloud_run_v2_service" "flask-api-service" {
   name     = "${var.project_id}--flask-api-service"
   location = var.region_name
   deletion_protection = false
+  ingress = "INGRESS_TRAFFIC_ALL"
   template {
     containers {
       image = "europe-west1-docker.pkg.dev/hamilius/hamilius-docker-repo/flask-api-image"
