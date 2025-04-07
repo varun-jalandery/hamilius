@@ -1,7 +1,7 @@
 data "google_project" "project" {}
 
 provider "google" {
-  credentials = file("../hamilius-511324b08e84.json")
+  credentials = file("./hamilius-511324b08e84.json")
   project = var.project_id
   region  = var.region_name
 }
@@ -152,6 +152,7 @@ resource "google_cloud_run_v2_service" "flask-api-service" {
   name     = "${var.project_id}--flask-api-service"
   location = var.region_name
   deletion_protection = false
+  ingress = "INGRESS_TRAFFIC_ALL"
   template {
     containers {
       image = "europe-west1-docker.pkg.dev/hamilius/hamilius-docker-repo/flask-api-image"
